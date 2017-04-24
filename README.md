@@ -1,5 +1,11 @@
-virtual-GPIO
+virtual-GPIO [ WIP modded from official ]
 ============
+
+  can use as a library , configured per-project with some #define before inclusion.
+  added: accelstepper , lcd16xx/lcd16xx_i2c, timers, debouncers
+  currently adding :  at328 nano i2c_slave handler <=> micropython esp8266 as master
+  
+============================================================
 
 Arduino as a "GPIO" device attached to PC or Raspberry Pi, which run python control script.
 
@@ -34,8 +40,8 @@ Shields, attached modules etc are NOT generally coded at the arduino end. Such s
 Atmega328 is assumed.
 
 Main files:
-  - VirtGPIO.ino (and its acompanying library files) essential - sketch for Arduino end.
-  - virtGPIO.py essential library at Raspberry Pi or PC.
+  - /VirtGPIO/*
+  - virtGPIO.py essential library at *Pi, µpython or PC.
   - collection of example python files demonstrating use of virtual GPIO.
 
 Documentation on GPIO calls:  See http://virtgpio.blavery.com
