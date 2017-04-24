@@ -1,5 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+from __future__ import division
+
 
 # virtGPIO.py   V0.9.6
 
@@ -40,15 +43,6 @@ Includes functionality of "import RPi.GPIO" and "import smbus" and "import spide
 # Want to load the arduino sketch via this same rPi uart line?  Refer to notes at top of "VirtGPIO.ino"
 
 
-
-if __name__ == '__main__':
-    print ("virtGPIO.py is an importable module for PC or Raspberry Pi:")
-    print ("...  import virtGPIO as GPIO")
-    print ("virtGPIO.py talks by USB-serial with ARDUINO-ftdi loaded with VirtGPIO.ino")
-    print ("")
-    exit()
-
-
 import time
 try:
     import serial
@@ -58,6 +52,10 @@ except:
 import sys
 import glob
 import os
+
+
+def usleep(x):
+    Time.sleep( float(x) / 1000000.0  )
 
 
 def hardResetARD():
@@ -123,102 +121,111 @@ def _serial_ports():
             pass
     return result
 
+def mcu_setup(verboseSetup=False,STDTIMEOUT = 0.8,baudlist = [115200],portlist = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyAMA0']):
+    global Serial
+    Serial = None
 
-Serial = None
-verboseSetup = False
-STDTIMEOUT = 0.8
+    # Following are DEFAULT portnames and baudrates that are attempted for virtGPIO.
+    # Optional file serialConfig.py can override these defaults.
 
-# Following are DEFAULT portnames and baudrates that are attempted for virtGPIO.
-# Optional file serialConfig.py can override these defaults.
-baudlist = [500000, 115200, 250000]
-portlist = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2', '/dev/ttyAMA0', 'COM1', "COM3", "COM8", "COM9"]
-# (these lists may be edited. 500000 baud recommended, list it first.)
-# (I'm not a Mac person. So of course, I haven't tested a Mac.
-#           Try "ls /dev/tty.*" in terminal to help find your Mac serial port name.)
-# Alternatively (BETTER!), use optional file "serialConfig.py" to override the baud and port settings above.
+    #baudlist = [115200] # [500000, 115200, 250000]
+    baudlist = [2000000, 1000000, 500000, 115200]
+    #portlist = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2', '/dev/ttyAMA0', 'COM1', "COM3", "COM8", "COM9"]
 
-try:
-    from serialConfig import *
-except:
-    pass
+    # (these lists may be edited. 500000 baud recommended, list it first.)
+    # (I'm not a Mac person. So of course, I haven't tested a Mac.
+    #           Try "ls /dev/tty.*" in terminal to help find your Mac serial port name.)
+    # Alternatively (BETTER!), use optional file "serialConfig.py" to override the baud and port settings above.
 
-if portlist == "SMART":
-    portlist = _serial_ports()
-    if verboseSetup:
-        print ("SMART Serial Port Seek:"),
-        print (portlist)
-elif verboseSetup:
-    print ("Ports to test:")
-    print (portlist)
-
-
-for k in range(len(portlist)):
-    try:
-        Serial = serial.Serial(portlist[k], 9600, timeout=STDTIMEOUT, dsrdtr=False)
-        break;
-    except:
-        pass
-
-if type(Serial) == type(None):
-    print ("Failed to initialise Serial Port.")
-    print ("Tried %s." % portlist)
-    print ("Check your port name??")
-    exit()
-
-
-if verboseSetup:
-    print ("Device found at %s " % Serial.port)
-
-
-if not Serial.port == "/dev/ttyAMA0":
-    # NOT for Raspberry Pi UART port: it has no DTR line
-    if verboseSetup:
-        print ("Attempting hard reset of arduino ...")
-    hardResetARD()
-
-# Now, we know that the serial port exists. It COULD be another device, not our arduino !
-# Try certain baudrates to talk with arduino ...
-if verboseSetup:
-    print ("Baudrates to test:")
-    print (baudlist)
-
-for k in range(len(baudlist)):
-    try:
+    if portlist == "SMART":
+        portlist = _serial_ports()
         if verboseSetup:
-            print ("Trying baudrate"),
-            print (baudlist[k])
-        Serial.setBaudrate(baudlist[k])   # Try each baudrate in turn from our list
-    except:
-        print ("Device at %s can not operate at baudrate %d" % (Serial.port,baudlist[k]))
-        print ("Change options in 'serialConfig.py'")
-        exit()
-    time.sleep(0.1)
-    if verboseSetup:
-        print ("Try Ping @"),
-        print (Serial.baudrate)
-    _SerialWrite("=")  # The sync() call used as a "ping"
-    ping = _SerialRead()   # Fetch one reply character
-    if len(ping)>0:
-        if _i8(ping[0]) == ord("="):    # Does this look like correct response?
+            print ("SMART Serial Port Seek:"),
+            print (portlist)
+    elif verboseSetup:
+        print ("Ports to test:")
+        print (portlist)
+
+
+    for k in range(len(portlist)):
+        try:
+            Serial = serial.Serial(portlist[k], 9600, timeout=STDTIMEOUT, dsrdtr=False)
             break;
-    if k==(len(baudlist)-1):   # tried & failed on all options
-            print ("Arduino not in contact. Tried baudrates"),
-            print (baudlist)
-            exit()
-if verboseSetup:
-    print ("Found Arduino @ baudrate %d " % Serial.baudrate)
+        except:
+            pass
 
-if Serial.port == "/dev/ttyAMA0":   # Raspberry Pi GPIO uart?
-    # on rPi UART mode we needed to establish serial contact before reset: this reset is a software command.
+    if type(Serial) == type(None):
+        print ("Failed to initialise Serial Port.")
+        print ("Tried %s." % portlist)
+        print ("Check your port name??")
+        exit()
+
+
     if verboseSetup:
-        print ("Soft reset of arduino ...")
-    softResetARD()
+        print ("Device found at %s " % Serial.port)
 
-if verboseSetup:
-    print ("Successful Setup")
-    print ("")
 
-# END OF SETUP
+    if not Serial.port == "/dev/ttyAMA0":
+        # NOT for Raspberry Pi UART port: it has no DTR line
+        if verboseSetup:
+            print ("Attempting hard reset of arduino ...")
+        if RunTime.mcu_reset:
+            hardResetARD()
+            print("Hard Reset MCU")
+            time.sleep(3)
+        else:
+            print("Not Resetting MCU")
+            Serial.setDTR(True)
+            time.sleep(2)
+
+
+    # Now, we know that the serial port exists. It COULD be another device, not our arduino !
+    # Try certain baudrates to talk with arduino ...
+    if verboseSetup:
+        print ("Baudrates to test:")
+        print (baudlist)
+
+    for k in range(len(baudlist)):
+        try:
+            if verboseSetup:
+                print ("Trying baudrate"),
+                print (baudlist[k])
+            Serial.setBaudrate(baudlist[k])   # Try each baudrate in turn from our list
+        except:
+            print ("Device at %s can not operate at baudrate %d" % (Serial.port,baudlist[k]))
+            print ("Change options in 'serialConfig.py'")
+            exit()
+        time.sleep(0.1)
+        if verboseSetup:
+            print ("Try Ping @"),
+            print (Serial.baudrate)
+
+        _SerialWrite("=")  # The sync() call used as a "ping"
+        ping = _SerialRead()   # Fetch one reply character
+        if len(ping)>0:
+            if _i8(ping[0]) == ord("="):    # Does this look like correct response?
+
+                break;
+        if k==(len(baudlist)-1):   # tried & failed on all options
+                print ("Arduino not in contact. Tried baudrates"),
+                print (baudlist)
+                exit()
+    if verboseSetup:
+        print ("Found Arduino @ baudrate %d " % Serial.baudrate)
+
+    dev('Connected at %s',Serial.baudrate)
+
+    if Serial.port == "/dev/ttyAMA0":   # Raspberry Pi GPIO uart?
+        # on rPi UART mode we needed to establish serial contact before reset: this reset is a software command.
+        if verboseSetup:
+            print ("Soft reset of arduino ...")
+        softResetARD()
+
+    if verboseSetup:
+        print ("Successful Setup")
+        print ("")
+
+    # END OF SETUP
 
 # All below is API for user functions
 
@@ -227,14 +234,152 @@ if verboseSetup:
 
 
 
+gpio = __import__(__name__)
+
+
+class MCU:
+
+    INPUT_PULLUP = 2
+    OUT = OUTPUT = 1
+    IN = INPUT = 0
 
 
 
+    def __init__(self,gpio):
+        self.gpio= gpio
+
+class Pin:
+
+    __LOCK__ = {}
+
+    PMAP = {
+        'A0' : 14 ,
+        'A1' : 15 ,
+        'A2' : 16 ,
+        'A3' : 17 ,
+        'A4' : 18 ,
+        'A5' : 19 ,
+        'PC0' : 14 ,
+        'PC1' : 15 ,
+        'PC2' : 16 ,
+        'PC3' : 17 ,
+        'PC4' : 18 ,
+        'PC5' : 19 ,
+        'PC4' : 18 ,
+        'PC5' : 19 ,
+        'SCA' : 18 ,
+        'SCL' : 19 ,
+        'PD0' : 0 ,
+        'PD1' : 1 ,
+        'PD2' : 2 ,
+        'PD3' : 3 ,
+        'PD4' : 4 ,
+        'PD5' : 5 ,
+        'PD6' : 6 ,
+        'PD7' : 7 ,
+        'PB0' : 8 ,
+        'PB1' : 9 ,
+        'PB2' : 10 ,
+        'PB3' : 11 ,
+        'PB4' : 12 ,
+        'PB5' : 13 ,
+        'LED_BUILTIN' : 13,
+    }
+
+    @classmethod
+    def get(cls,thepin):
+        if isinstance(thepin,str):
+            thepin =  thepin.upper()
+            mapping = cls.PMAP
+            if thepin in mapping:
+                thepin = mapping.get(thepin)
+            else:
+                raise Exception('Pin %s unknow to this board' % thepin)
+        return thepin
+
+    @classmethod
+    def is_used(cls,thepin,allow='',rex=True,lck='l'):
+        pin = cls.get(thepin)
+        if allow:
+            pinm =cls.__LOCK__.get(pin,None)
+            if pinm is None:
+                if lck:
+                    cls.lock(pin,lck[0].lower())
+                return False
+            res=not( pinm in allow )
+        else:
+            res=cls.__LOCK__.get(pin,None) is not None
+        if res:
+            if rex:
+                raise Exception('Pin %s(%s) already in use' % (thepin,pin) )
+        else:
+            if lck:
+                cls.lock(pin,lck[0].lower())
+        return res
 
 
+    @classmethod
+    def lock(cls,thepin,mode):
+        thepin = cls.get(thepin)
+        cls.__LOCK__[thepin] = mode.lower()[0]
 
 
+    def __init__(self,thepin,mode, mcu =None):
+        self.mcu = mcu or MCU(gpio)
 
+        if type(thepin) in (str,unicode):
+            self.pin = self.get(thepin)
+        else:
+            self.pin = thepin
+
+
+        if 'w' in mode:
+            self.mcu.gpio.pinMode( self.pin , self.mcu.OUTPUT )
+            print( thepin, self.pin ,'OUT' )
+            self.out = True
+            self.down()
+            self.lock(self.pin,'w')
+        else:
+            self.mcu.gpio.pinMode( self.pin , self.mcu.INPUT )
+            print( thepin, self.pin , 'IN' )
+            self.out = False
+            self.lock(self.pin, mode)
+
+        self.state = 0
+        self.step = '-'
+        self.name = str(thepin)
+
+    def down(self):
+        self.lo()
+        #print("DOWN N/I")
+
+    def up(self):
+        if not self.out:
+            self.mcu.gpio.pinMode(self.pin, self.mcu.INPUT_PULLUP )
+            return
+
+        print("UP write N/I")
+
+    def dw(self,v):
+        self.state =  ( v and 1 ) or 0
+        self.mcu.gpio.digitalWrite( self.pin , self.state )
+        return self
+
+    def hi(self):
+        self.dw(1)
+
+    def lo(self):
+        self.dw(0)
+
+    def invert(self):
+        self.dw( not self.state )
+        return self.state
+
+    def dr(self):
+        return self.mcu.gpio.digitalRead( self.pin )
+
+    def ar(self):
+        return self.mcu.gpio.analogRead( self.pin )
 
 ######################################################################
 
@@ -254,6 +399,7 @@ A7 = 21
 OUT = 1
 IN = 0
 
+INPUT_PULLUP = 2
 
 # RPI.GPIO constants for compatibility:
 PUD_UP = 22
@@ -277,27 +423,32 @@ def setwarnings(mode):
 
 
 def setup(dpin, mode, pull_up_down=0):
+    global INPUT_PULLUP
     # Cast it into arduino numbers
-    INPUT_PULLUP = 2
     if pull_up_down == PUD_UP:
         mode = INPUT_PULLUP
     if pull_up_down == PUD_DOWN:
         print ("Virtual-GPIO (arduino) has no pulldown. Continuing ...")
     _SerialWrite("s" + chr(dpin) + chr(mode));
+
+
+
 def pinMode(dpin, mode):   # arduino style
-    setup(dpin, mode)
+    _SerialWrite("s" + chr(dpin) + chr(mode));
 
 def output(dpin, hilo):
     _SerialWrite("w" + chr(dpin) + chr(hilo))
     _SerialRead()  # sync only
+
 def digitalWrite(dpin, hilo):  # arduino style
     output(dpin, hilo)
 
 def input(dpin):
     _SerialWrite("r" + chr(dpin))
     return _serialread1int8(0xff)
-def digitalRead(dpin):    # arduino style
-    input(dpin)
+
+digitalRead = input
+
 
 def digitalPreciseRead(pin):
     # Uses analog comparator on to compare the pin's ANALOG volts against 1.1V chip reference.
@@ -346,6 +497,26 @@ def analogReadAll():
         for k in range(8):
             buf3.append(_i8(buf2[k*2]) + 256*_i8(buf2[1+k*2]))
     return buf3
+
+def userdef(flt=100):
+    _SerialWrite(chr(0xfd))
+    mx = 4
+    buf2 = _SerialRead(mx*2)
+    # pyserial's serial.read() returns STRING or BYTES (of 16 CHARs)
+    # but we want LIST of 8 x 16-bit integers as our return format
+    L = len(buf2)
+    if L<mx*2:        # timeout?
+        ud = [0] * mx    # empty dummy of the correct length/format
+    else:
+        ud = []
+        for k in range(mx):
+            ud.append(  _i8(buf2[k*2]) + 256*_i8(buf2[1+k*2] )  )
+    if flt:
+        ud= map( float , ud )
+        for x in range(0,mx):
+            ud[x] = ud[x]/100.0
+    return ud
+
 
 def pulseOut(dpin, mode, usec):   # pulse to 255 uSec
     _SerialWrite("U")
@@ -442,22 +613,92 @@ AVR = _AVR_()
 
 ###############################################
 
+class Servo_mcu:
 
-
-class Servo:
-    # Using any servos disables PWM on pins 9-10  (uses Timer1)
-
-    def __init__(self, pin):   #  pin 3 - 10
-        setup(pin, OUTPUT)
+    def mcu_init(self,pin):
+        pin = Pin.get(thepin)
+        Pin.is_used(pin,rex=True,lck='servo')
+        pinMode(pin, MCU.OUTPUT)
         self.pin = pin
-        pass
 
-    def write(self, value):
+    def mcu_set_angle(self,value):
         _SerialWrite("V" + chr(self.pin))   # 2-10
         _SerialWrite([value])  #  0-180
 
-    def stop(self):
+    def mcu_stop(self):
         _SerialWrite("v" + chr(self.pin))
+
+    def mcu_idle(self):
+        pass
+
+class Servo(Servo_mcu):
+    # Using any servos disables PWM on pins 9-10  (uses Timer1)
+
+    def __init__(self, thepin,left=0,neutral=90,right=180):   #  pin 2 - 10
+
+        self.neutral = float(neutral)
+        self.write(neutral)
+        self.lc = float(neutral - left)  / 90.0
+        self.rc = float(right - neutral) / 90.0
+        self.rn = None
+
+        self.mcu_init(thepin)
+
+
+    def set_pos(self,orel=0):
+        rel =orel
+        if self.rn is not None:
+            if rel<self.rn:
+                rel =  (self.rn - rel ) * self.rl
+            elif rel>self.rn:
+                rel = (rel - self.rn ) * self.rr
+            else:
+                rel=0.0
+
+
+        if rel<0:
+            rel = 90+rel
+            rel= int(rel * self.lc)
+        elif rel>0:
+            rel = int( self.neutral + rel*self.rc  )
+        else:
+            rel = int(self.neutral)
+
+        #print("OREL:",orel,"=>",rel)
+        self.write_angle(rel)
+        return orel
+
+    def free(self):
+        pass
+
+
+    def remap(self,l,n,r):
+        self.rl = -( 90.0 / (n-l) )
+        self.rn = n
+        self.rr = 90.0 / (r-n)
+
+
+    def set_angle(self, degrees=None, radians=None):
+        if degrees is None:
+            degrees = math.degrees(radians)
+
+        degrees = degrees % 360
+
+        value = int(degrees)
+        if (value<0) or (value>180):
+            if value<0:
+                value=0
+            if value>180:
+                value=180
+            #print('Servo invalid value %s' % value)
+            #discard overuns due to analogread fails
+            return
+
+        self.mcu_set_angle(value)
+
+    def stop(self):
+        self.mcu_stop()
+
 
 
 ###############################################
@@ -621,16 +862,19 @@ class SerialRx:
 class PWM:
     pin = 0
 
-    def __init__(self, pin, freq):
-        self.pin = pin
+    def __init__(self, thepin, freq):
+        self.pin = Pin.get(thepin)
+        Pin.is_used(thepin,rex=True,lck="PWM")
+        gpio.pinMode( self.pin , MCU.OUTPUT )
+
 
     def start(self, dc):
         pwmWrite(self.pin, dc)
 
-    def changeFrequency(self, freq):
-        pass
+    def set_frequency(self, freq):
+        fix('N/I')
 
-    def changeDutyCycle(self, dc):
+    def set_duty(self, dc):
         pwmWrite(self.pin, dc)
 
     def stop(self):
@@ -638,8 +882,49 @@ class PWM:
 
 
 ###############################################
+class I2C_device:
+
+    BUSES = {}
+
+    def __init__(self, addr, port=0):
+        self.addr = addr
+        if port in self.__class__.BUSES:
+            self.bus = self.__class__.BUSES[port]
+        else:
+            self.bus = self.__class__.BUSES[port] = I2C()
+
+    # Write a single command
+    def write_cmd(self, cmd):
+        self.bus.write_byte(self.addr, cmd)
+        Time.sleep(0.0001)
+
+    # Write a command and argument
+    def write_cmd_arg(self, cmd, data):
+        self.bus.write_byte_data(self.addr, cmd, data)
+        Time.sleep(0.0001)
+
+    # Write a block of data
+    def write_block_data(self, cmd, data):
+        self.bus.write_block_data(self.addr, cmd, data)
+        Time.sleep(0.0001)
+
+    # Read a single byte
+    def read(self):
+        return self.bus.read_byte(self.addr)
+
+    # Read
+    def read_data(self, cmd):
+        return self.bus.read_byte_data(self.addr, cmd)
+
+    # Read a block of data
+    def read_block_data(self, cmd):
+        return self.bus.read_block_data(self.addr, cmd)
+
 
 class I2C:
+
+    device = I2C_device
+
 
     def __init__(self, enablePullups = True):
         _SerialWrite("!" + chr(enablePullups))
@@ -674,7 +959,7 @@ class I2C:
         self.write(port, [txchr])
         return self.read(port, rxcount)
 
-
+    @classmethod
     def detect(self):
         # Diagnostic function   equiv to i2cdetect utility in linux
         _SerialWrite("?")
@@ -695,7 +980,7 @@ class I2C:
         return r[1]
 
     def read_word_data(self, addr, cmd):
-        pass  # nyi
+        print('860:nyi')
 
     def write_byte(self, addr, cmd):
         self.write(addr, [cmd])
@@ -704,10 +989,10 @@ class I2C:
         self.write( addr, [cmd, data])
 
     def write_word_data(self, addr, cmd, data):
-        pass  # nyi
+        print('869:nyi')
 
     def write_block_data(self, addr, cmd, data):
-        pass   # nyi
+        print('872:nyi')
 
     def write_i2c_block_data(self, addr, cmd, data):   # March 2015
         self.write( addr, [cmd]+data)
@@ -723,6 +1008,7 @@ class Stepper:
         _SerialWrite([0xb1, id & 1, wires & 7, pin1, stepsPerRev&0xff, stepsPerRev >>8])
         self.id = id&1
         self.SPR = stepsPerRev
+        self.speedRPM = 0
 
     def setSpeedRPM(self, speedRPM):   #  integer speed in RPM (positive number)
         _SerialWrite([0xb2, self.id, speedRPM&0xff, speedRPM>>8])
@@ -740,6 +1026,10 @@ class Stepper:
         return _serialread2int16(0)
 
     def waitToFinish(self):
+        if self.speedRPM==0:
+            #motor is stopped
+            return 1
+
         wtime = ((1.3 * self.steps) // self.speedRPM) * 60 // self.SPR
         t1 = time.time()
         r=0
@@ -803,8 +1093,19 @@ class InfraRedRx:
     # Uses Timer2, so PWM on p3, p11 disabled
 
     def __init__(self, pin):
-      self.devicenum = 0   # ID of hand remote
-      _SerialWrite("F" + chr(pin & 0x0f))
+        Pin.is_used(pin,rex=True,lck='ir')
+        thepin = Pin.get(pin)
+        self.devicenum = 0   # ID of hand remote
+        #_SerialWrite("F" + chr(thepin & 0x0f))
+
+        #_SerialWrite("G%s" % chr(thepin ))
+        #waitc(thepin, "Starting FK infrared RX on Pin[%s](%s)" %(pin,thepin) )
+
+
+        _SerialWrite("F%s" % chr(thepin) )
+        waitc(thepin, "Starting infrared RX on Pin[%s](%s)" %(pin,thepin) )
+
+
 
     def read(self):     # fetch IR code from remote
         _SerialWrite("f");
@@ -869,8 +1170,9 @@ class PWMplus:
 class Trace:   #developer use.
     def __init__(self):
         pass
+
     def Start(self):
-            _SerialWrite("^")
+        _SerialWrite("^")
 
     def Stop(self):
        _SerialWrite("<")
@@ -886,6 +1188,7 @@ def mopup():
     while(Serial.inWaiting()):   # anything to mopup???
         r=_SerialRead()
         print ("   {%x}" % ( _i8(r))),
+
 
 
 ###############################################
@@ -1007,6 +1310,121 @@ def cInt32FromFloat(f):
         return cInt32(int(f))
 def str1FromByte(i):
         return chr(cByte(i))
+
+
+
+
+
+
+
+
+
+
+
+#============================================================================================
+
+
+def getLB():
+    _SerialWrite( 'J')
+    slen = _i8(_SerialRead(1)[0])
+    try:
+        datastr = _SerialRead(slen)
+    except Exception as error:
+        print(error)
+        datastr = ''
+
+    return datastr
+
+def waitc(ack=0,dbg='[unknow]'):
+    tst=_SerialRead(1)
+    if tst:
+        tst = ord(tst[0]) - 128
+        if ack!=tst:
+            dev("NACK(%s) = %s " ,ack,tst)
+    else:
+        tst=None
+        err("NACK to [ %s ]",dbg)
+    return tst
+
+
+def sendbuf(data):
+    ld = len(data)
+    print( '>>(%s)' % ld ,repr(data) )
+    if (ld>64):
+        print('WARNING: arduino serial buffer is 64 < %s' % ld)
+    _SerialWrite( ''.join( [chr(106), chr(ld) ,  data ] ) )
+    return waitc(ld,'sendbuf')
+
+
+def LBout(opcode,data='',forceSz=0):
+    if forceSz>0:
+        while len(data)>forceSz:
+            if data.count(': '):
+                data = data.replace(': ',':',1)
+            elif data.count(' :'):
+                data = data.replace(' :',':',1)
+            elif data.count('= '):
+                data = data.replace('= ','=',1)
+            elif data.count(' :'):
+                data = data.replace(' =','=',1)
+            elif data.count(' '):
+                data = data.replace(' ','',1)
+            else:
+                break
+
+    sendbuf(data)
+    #, len(data) , data
+    _SerialWrite( ''.join( [chr(0xf1), chr(opcode)] ) )
+    return waitc(0,'LBout')
+
+def WriteLn(data):
+    LBout(0,data)
+
+def putFB(d1,d2=None):
+    if d2 is None:
+        LBout(0,d1[0:16])
+        LBout(1,d1[16:32])
+        return
+
+    LBout(0, d1+(' '* (16-len(d1)) ) , forceSz = 16)
+    LBout(1, d2+(' '* (16-len(d2)) ) , forceSz = 16)
+
+
+def f2(pin,opcode,data=''):
+    sendbuf(data)
+    _SerialWrite( ''.join( [chr(0xf2), chr(pin), chr(opcode) ] ) )
+
+
+def am_ask_ook_tx(pin,data,mode=0):
+    f2(pin, mode, data)
+    return 1
+
+
+
+
+class Debounced:
+
+    def __init__(self,pin,ms=10,pullup=True):
+        Pin.is_used(pin,allow='r',rex=True,lck='debounce')
+        self.pin = Pin.get(pin)
+
+        pullup = (pullup and -1 ) or 1
+
+        _SerialWrite( 'B%s%s' %( chr(self.pin), chr( 128 + (pullup*ms) ) ) )
+
+
+    def __bool__(self):
+        Serial.write('b%s' % chr(self.pin) )
+        return _SerialRead(1)[0]==chr(1)
+
+    __nonzero__ = __bool__
+
+    def __repr__(self):
+        sta = digitalRead(self.pin)
+        _SerialWrite('b%s' % chr(128+self.pin) )
+        return 'B[%s](%s)(%s)' % (self.pin, ord(_SerialRead(1)[0]) , not sta )
+
+    __str__ = __repr__
 
 
 # Still flagged for possible change:
