@@ -1,9 +1,11 @@
 virtual-GPIO [ WIP modded from official ]
 ============
 
-  can use as a library , configured per-project with some #define before inclusion.
-  added: accelstepper , lcd16xx/lcd16xx_i2c, timers, debouncers
-  currently adding :  at328 nano i2c_slave handler <=> micropython esp8266 as master
+  - can use as a library , configured per-project with some #define before inclusion.
+  
+  - added: accelstepper , lcd16xx/lcd16xx_i2c, timers, debouncers
+  
+  - currently adding :  at328 nano i2c_slave handler <=> micropython esp8266 as master
   
 ============================================================
 
