@@ -1,0 +1,34 @@
+#!/bin/bash
+clear
+
+if type -path xtensa-lx106-elf-c++ >/dev/null 2>&1
+then
+    echo "esp sdk env ok"
+else
+    . /opt/sdk/esp-open-sdk.profile
+fi
+
+if type -path xtensa-lx106-elf-c++ >/dev/null 2>&1
+then
+    FIRM=build/firmware-combined.bin
+
+    cd micropython-esp8266/esp8266/
+    rm $FIRM
+    make axtls
+    make
+
+
+    if [ -f $FIRM ]
+    then
+        #115200
+        # these are my parameters for a "lolin nodemcu v3"
+        esptool.py --port /dev/ttyUSB? --baud 460800 write_flash --flash_size=detect --flash_mode dio 0x00000 $FIRM
+    else
+        echo firm $FIRM not found, compilation failed or out of disk.
+    fi
+
+
+    echo "miniterm.py /dev/ttyUSB? 115200"
+else
+    echo "an esp open sdk env script is expected"
+fi
