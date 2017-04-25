@@ -1,5 +1,6 @@
 virtual-GPIO [ WIP modded from official ]
 ============
+  - non blocking loop, allowing embed_setup() , embed_loop() , embed_draw() to run while serving RPC
 
   - can use as a library , configured per-project with some #define before inclusion.
   
@@ -9,9 +10,9 @@ virtual-GPIO [ WIP modded from official ]
   
 ============================================================
 
-Arduino as a "GPIO" device attached to PC or Raspberry Pi, which run python control script.
+Arduino as a "GPIO" device attached to PC or MCU, which run python control script.
 
-Give your Raspberry Pi precise counters, easy IR receiver, analog inputs.
+Give your *Pi precise counters, easy IR receiver, analog inputs.
 Give your PC a virtual GPIO on a USB port. Add SPI, I2C, analog & digital pins, servo control, etc.
 
 Supported:
@@ -39,6 +40,7 @@ This module uses USB serial to power and control the arduino.
 The ARDUINO end is the sketch "VirtGPIO.ino".
 Shields, attached modules etc are NOT generally coded at the arduino end. Such support is to be coded at the PC end.
 (Exceptions:  infrared remote codes reader, and background stepper)
+
 Atmega328 is assumed.
 
 Main files:
