@@ -1,14 +1,55 @@
 virtual-GPIO [ WIP modded from official ]
 ============
-  - non blocking loop, allowing embed_setup() , embed_loop() , embed_draw() to run while serving RPC
 
-  - can use as a library , configured per-project with some #define before inclusion.
+Micropython-ESP8266 Features :
+  testing:
+    - socket access
+    - websocket access
+  planned:
+    - i2c
   
-  - added: accelstepper , lcd16xx/lcd16xx_i2c, timers, debouncers
+    
+H3Droid Features :
+  testing:
+    - socket access
+  planned:
+    - websocket access
+    - i2c
+    - bidirectionnal .
+    
+    
+Armbian Features :
+  testing:
+    - all access types, bidirectionnal.
+    - wiringX abstraction.
+    
+  planned: 
+    - arduino C interpreter.
+    - coroutines / events.
+
+Emscripten Features :
+  testing:
+    - python console ( maybe brython too )
   
-  - currently adding :  at328 nano i2c_slave handler <=> micropython esp8266 as master
+  planned:
+    - js editor for remote file on boards.
+    - mcu 3D mockup with panda3d ( led / servo / motor )
   
-============================================================
+
+
+Arduino Features :
+  testing:
+    - non blocking loop, allowing embed_setup() , embed_loop() , embed_draw() to run while serving RPC
+    - can use as a library , configured per-project with some #define before inclusion.
+    - added: accelstepper , lcd16xx/lcd16xx_i2c, timers, debouncers
+    
+  planned: 
+    - i2c slave. ( currently adding :  at328 uno/nano i2c_slave handler <=> micropython esp8266 as master )
+  
+  
+  
+  
+======= Original README follows =====
 
 Arduino as a "GPIO" device attached to PC or MCU, which run python control script.
 
