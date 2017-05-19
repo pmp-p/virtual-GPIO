@@ -1,4 +1,6 @@
-class Pin:
+
+
+class Pin(robject):
 
     PMAP = {
         'A0' :  0,
@@ -61,9 +63,9 @@ class Pin:
             print('error no pin mode %s' % pin )
         self.servo = None
 
-    def __repr__(self):
+
+    def to_string(self):
         return '%s(%s)[%s]'%(self.name,self.gpio,self.mode)
-    __str__= __repr__
 
 
     def up(self):

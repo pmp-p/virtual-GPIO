@@ -2,22 +2,17 @@
 
     class Servo_mcu:
 
-        def mcu_init(self,pin, freq, duty):
-            self.pwm = machine.PWM(pin, freq,duty)
+        def mcu_init(self,pin, freq, duty): self.pwm = machine.PWM(pin, freq,duty)
 
-        def mcu_duty(self,duty):
-            self.pwm.duty(duty)
+        def mcu_duty(self,duty): self.pwm.duty(duty)
 
-        def mcu_idle(self):
-            self.pwm.duty(0)
+        def mcu_idle(self): self.pwm.duty(0)
 
         mcu_stop = mcu_idle
-
 
     class Servo(Servo_mcu):
 
         def call(self,o, freq=50, min_us=500, max_us=2300, angle=180 ):
-            if o is use.default: return o(**locals())
             self.min_us = min_us
             self.max_us = max_us
             self.us = 0
@@ -28,9 +23,7 @@
             return [self]
 
 
-        def free(self):
-            self.pwm = None
-
+        def free(self): self.pwm = None
 
         def write_us(self, us):
 

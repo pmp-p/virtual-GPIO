@@ -1,4 +1,4 @@
-if isDefined('USE_SHIFTREG'):
+#if USE_SHIFTREG
     class ShiftReg:
         def __init__(self,  rclk='D2', latch='D1', serial='D0', oe=None):
             """ 11 12 14 """
@@ -48,6 +48,4 @@ if isDefined('USE_SHIFTREG'):
 
 
     RunTime.add('ShiftReg',ShiftReg)
-
-
-
+#endif

@@ -21,7 +21,7 @@
             else:
                 print("ESP ADC(1) cannot read VCC, reflash with : adc1_mode(mode=255,write=True)")
             global USE_EXIT
-            builtins.adc1_mode=adc1_mode
+            RunTime.builtins.adc1_mode=adc1_mode
             USE_EXIT=True
             return
         except:

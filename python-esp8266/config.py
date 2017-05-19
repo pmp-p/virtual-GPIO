@@ -10,6 +10,7 @@ USE_RPC = False
 USE_SHIFTREG = False
 #break auto-import loop
 USE_EXIT = False
+USE_ROUTER = True
 
 #==================================================================================================
 

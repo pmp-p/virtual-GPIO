@@ -1,6 +1,4 @@
-
-
-if isDefined('USE_MCP3008'):
+#if USE_MCP3008
     print("\tESP ADC set to",end=' ')
     adc_esp = 0
 
@@ -83,6 +81,7 @@ if isDefined('USE_MCP3008'):
 
     print('\t+ MCP3008')
 
-        #FIXME: use CD74HC4067 and digipot to feed ESP adc(0)
+    #FIXME: use CD74HC4067 and digipots to feed ESP adc(0)
     del adc_esp
 
+#endif
