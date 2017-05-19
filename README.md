@@ -6,6 +6,7 @@ ___________
 testing:
   - socket access
   - websocket access
+  
 planned:
   - i2c
   
@@ -14,6 +15,7 @@ H3Droid Features :
 ___________
 testing:
   - socket access
+  
 planned:
   - websocket access
   - i2c
