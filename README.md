@@ -1,8 +1,8 @@
 virtual-GPIO [ WIP modded from official ]
 ============
 
-Micropython-ESP8266 Features :
 ___________
+Micropython-ESP8266 Features :
 testing:
   - socket access
   - websocket access
@@ -10,9 +10,8 @@ testing:
 planned:
   - i2c
   
-    
+___________    
 H3Droid Features :
-___________
 testing:
   - socket access
   
@@ -21,9 +20,8 @@ planned:
   - i2c
   - bidirectionnal .
     
-    
+___________    
 Armbian Features :
-___________
 testing:
   - all access types, bidirectionnal.
   - wiringX abstraction.
@@ -32,8 +30,8 @@ planned:
   - arduino C interpreter.
   - coroutines / events.
 
-Emscripten Features :
 ____________________
+Emscripten Features :
 testing:
   - python console ( maybe brython too )
 
@@ -41,15 +39,13 @@ planned:
   - js editor for remote file on boards.
   - mcu 3D mockup with panda3d ( led / servo / motor )
 
-
-
+__________________
 Arduino Features :
-_________________
 testing:
   - non blocking loop, allowing embed_setup() , embed_loop() , embed_draw() to run while serving RPC
   - can use as a library , configured per-project with some #define before inclusion.
   - added: accelstepper , lcd16xx/lcd16xx_i2c, timers, debouncers
-
+  
 planned: 
   - i2c slave. ( currently adding :  at328 uno/nano i2c_slave handler <=> micropython esp8266 as master )
 
