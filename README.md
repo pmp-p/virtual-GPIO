@@ -3,6 +3,7 @@ virtual-GPIO [ WIP modded from official ]
 
 ___________
 Micropython-ESP8266 Features :
+
 testing:
   - socket access
   - websocket access
@@ -12,6 +13,7 @@ planned:
   
 ___________    
 H3Droid Features :
+
 testing:
   - socket access
   
@@ -22,6 +24,7 @@ planned:
     
 ___________    
 Armbian Features :
+
 testing:
   - all access types, bidirectionnal.
   - wiringX abstraction.
@@ -32,6 +35,7 @@ planned:
 
 ____________________
 Emscripten Features :
+
 testing:
   - python console ( maybe brython too )
 
@@ -41,6 +45,7 @@ planned:
 
 __________________
 Arduino Features :
+
 testing:
   - non blocking loop, allowing embed_setup() , embed_loop() , embed_draw() to run while serving RPC
   - can use as a library , configured per-project with some #define before inclusion.
