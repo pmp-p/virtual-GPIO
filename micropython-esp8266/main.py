@@ -73,11 +73,6 @@ if not isDefined('USE_EXIT'):
 
         return '\n'.join(ilines),'\n'.join(clines),defs
 
-    def zfill(i,places,char='0'):
-        i=str(i)
-        if len(i)<places:  i = '%s%s' % (  char * ( places-len(i) ) , i )
-        return i
-
     def report_run_error(lines,e=None,tip='<file>'):
         if e:
             print("="*10,tip,"="*10)

@@ -2,23 +2,18 @@
 import esp
 esp.osdebug(None)
 import gc
-#import webrepl
-#webrepl.start()
+import machine
 
-#import machine
 #machine.UART(0).init(1000000)
 
 
 import sys
 import time
 import builtins
-import machine
+
 builtins.Time = time
 builtins.sys = sys
 builtins.machine = machine
-
-#from micropython import const
-
 
 def isDefined(varname,name=None):
     if not hasattr(__import__(name or __name__),varname):
@@ -90,14 +85,20 @@ class RunTime:
             protect.append(entry)
 
     @classmethod
-    def to_json(self,data):
-        self.SerFlag += 1
+    def to_json(cls,data):
+        cls.SerFlag += 1
         try:
             return json.dumps(data)
         finally:
-            self.SerFlag -= 1
+            cls.SerFlag -= 1
 
 
+def zfill(i,places,char='0'):
+    i=str(i)
+    if len(i)<places:  i = '%s%s' % (  char * ( places-len(i) ) , i )
+    return i
+
+builtins.zfill = zfill
 builtins.RunTime = RunTime
 builtins.use = RunTime
 builtins.isDefined = isDefined
