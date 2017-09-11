@@ -12,9 +12,9 @@ class Pin(robject):
         'D2' :  4,
 
         'D1' :  5,
-6
-7
-8
+#6
+#7
+#8
         'SD0'  : 7,
         'SD1'  : 8,
         'SD2' : 9,
@@ -27,8 +27,7 @@ class Pin(robject):
         'HMISO'  : 12,
         'HCLK' : 14,
         'HCS'   : 15,
-
-11
+#11
         'D6' : 12,
         'D7' : 13,
         'D5' : 14,
@@ -121,7 +120,6 @@ class Pin(robject):
 
     toggle = invert
 
-setattr( RunTime.builtins , 'Pin', Pin )
 RunTime.add('Pin',Pin)
 
 
