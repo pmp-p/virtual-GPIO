@@ -1,5 +1,3 @@
-
-
 class Pin(robject):
 
     PMAP = {
@@ -35,10 +33,9 @@ class Pin(robject):
         'D0' : 16,
     }
 
-
     Servo = None
-
-
+    OUT = machine.Pin.OUT
+    IN  = machine.Pin.IN
 
     @classmethod
     def get(cls,pin,default=-1):
@@ -49,31 +46,27 @@ class Pin(robject):
             return cls.PMAP.get(pin,default)
         return pin
 
-    def __init__(self,pin,mode='r'):
+    def __init__(self,pin,mode='r',value=0):
         thepin = self.get(pin)
         self.name = pin
         self.gpio = thepin
         self.mode = mode
         if 'w' in mode:
-            self.instance = machine.Pin(thepin,mode=machine.Pin.OUT,value=0)
+            self.instance = machine.Pin(thepin,mode=machine.Pin.OUT,value=value)
         elif 'r' in mode:
             self.instance = machine.Pin(thepin,mode=machine.Pin.IN)
         else:
             print('error no pin mode %s' % pin )
-        self.servo = None
-
+        self.pwm = self.servo = None
 
     def to_string(self):
         return '%s(%s)[%s]'%(self.name,self.gpio,self.mode)
 
-
-    def up(self):
+    def up(self):pass
         #self.instance.pull( machine.Pin.PULL_UP )
-        pass
 
-    def down(self):
+    def down(self):pass
         #self.instance.pull( machine.Pin.PULL_DOWN )
-        pass
 
     def as_servo(self,left=0,neutral=90,right=180):
         self.servo = self.Servo()
@@ -84,6 +77,9 @@ class Pin(robject):
 
         return self
 
+    def as_pwm(self,freq=50, duty=0):
+        self.pwm = machine.PWM(self.instance ,freq=freq, duty=duty)
+        return self
 
     def idle(self):
         if self.servo :
@@ -94,9 +90,17 @@ class Pin(robject):
             self.servo.mcu_stop()
             self.servo = self.servo.free()
 
+        if self.pwm:
+            self.pwm.duty(0)
+            self.pwm = None
 
+        self.instance.value(0)
 
     def __call__(self,*argv):
+        if self.pwm:
+            return self.pwm.duty(*argv)
+        if self.servo:
+            return self.set_pos(*argv)
         return self.instance(*argv)
 
     def dw(self,v):
@@ -120,6 +124,4 @@ class Pin(robject):
 
     toggle = invert
 
-RunTime.add('Pin',Pin)
-
-
+export('Pin',Pin)
