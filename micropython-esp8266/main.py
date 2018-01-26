@@ -25,7 +25,6 @@ if not isDefined('USE_EXIT'):
     RunTime.add('url','URL')
 
     def prepro(source):
-        global protect
 
         def imark(im): return im,'%simport ' % (' '*im)
 
@@ -65,8 +64,8 @@ if not isDefined('USE_EXIT'):
             elif l.startswith( importmark ):
                 ilines.append(l[INDENT:])
                 ll = ll.replace( importmark,'').strip().rsplit(' ',1)[-1]
-                if not ll in protect:
-                    protect.append(ll) #prevent cleanup from removing modules
+                if not ll in protected:
+                    protected.append(ll) #prevent cleanup from removing modules
                 clines.append( '#%s' % ll )
             else:
                 clines.append( l[INDENT:] )
@@ -101,45 +100,59 @@ if not isDefined('USE_EXIT'):
                 report_run_error(imports,e,tip)
             imports=''
             del imports
-
+            bmem = do_gc()
 
         if maincode:
-            print('<%s %s L, Sz %s >' % (tip, 1+maincode.count('\n'), len(maincode) ) )
+            print('<%s %s L, %s B>' % (tip, 1+maincode.count('\n'), len(maincode) ) )
             for d in defs:
                 print(d)
             del defs
-            bmem = do_gc()
-
             RunTime.C.set_remote_file(tip)
+            do_gc()
+
             try:
                 exec( maincode , globals(),locals() )
             except SyntaxError as e:
                 report_run_error(maincode,e,tip)
             except Exception as e:
                 report_run_error(maincode,e,tip)
+
             maincode=''
             del maincode
             do_gc()
-            print('</%s B %s\n' % (tip, bmem - gc.mem_free() ) )
+            print('</%s B %s>\n' % (tip, bmem - gc.mem_free() ) )
 
     for e in dir():
-        if not e in protect:
-            protect.append(e)
+        if not e in protected:
+            protected.append(e)
 
     import c_runtime
     RunTime.C = c_runtime
 
+    mods=[]
     for mod in URL(RunTime.srv + '/index').readlines():
-        mod = mod.strip()
+        mods.append( mod.strip() )
+
+    do_gc()
+
+    while len(mods):
+        mod = mods.pop(0).strip()
         if mod:
-            if mod[0]!='#':
-                pyfilerun( URL( RunTime.srv + mod ), mod[1:-3] )
-                if isDefined('USE_EXIT'):
-                    break
-            else:
-                print("\n%s\n"%mod)
-    else:
-        SHELL.start()
+            try:
+                if mod[0]!='#':
+                    pyfilerun( URL( RunTime.srv + mod ), mod[1:-3] )
+                    if isDefined('USE_EXIT'):
+                        break
+                else:
+                    print("\n%s\n"%mod)
+            except OSError as e:
+                print(e)
+                break
+    print("failed",mods)
+    del mods
+#
+#    else:
+#        SHELL.start()
 
 
     if isDefined('USE_WEBREPL'):
@@ -151,14 +164,14 @@ if not isDefined('USE_EXIT'):
     print('\nCleaning : ',end='')
 
     for f in dir():
-        if not f in protect:
+        if not f in protected:
             print(f,end=', ')
             try:
                 delattr( __import__(__name__) , f)
             except:
                 delattr( builtins , f)
         else:
-            protect.remove(f)
+            protected.remove(f)
     del f
     print()
     do_gc(True)
