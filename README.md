@@ -1,5 +1,11 @@
+project on hold while exploring direct rpc mapping via c2ffi "over the wire"
+
+
+
 virtual-GPIO [ WIP modded from official ]
 ============
+
+
 
 ___________
 Micropython-ESP8266 Features :
